@@ -16,6 +16,7 @@ class Zone:
         self.color = color
         self.max_drones = max_drones
 
+
 class Connection:
     """Represent a bidirectional connection between two zones."""
     def __init__(
@@ -28,6 +29,7 @@ class Connection:
         self.zone2 = zone2
         self.max_link_capacity = max_link_capacity
 
+
 class Map:
     """Represent the complete drone network."""
     def __init__(self) -> None:
@@ -37,9 +39,9 @@ class Map:
         self.end: Zone | None = None
 
     def add_zone(self, zone: Zone) -> None:
-    """Add a zone to the map."""
-    self.zones[zone.name] = zone
+        """Add a zone to the map."""
+        self.zones[zone.name] = zone
 
     def add_connection(self, connection: Connection) -> None:
-    """Add a connection to the map."""
-    self.connections.append(connection)
+        """Add a connection to the map."""
+        self.connections.append(connection)

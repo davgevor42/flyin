@@ -1,5 +1,6 @@
 from classes import Zone, Connection, Map
-from validate import split_hub_content, parse_metadata
+from validate import split_hub_content, parse_metadata, split_connection_content
+
 
 def zone_creating(content, line_number):
     name, x, y, metadata = split_hub_content(content, line_number)
@@ -17,23 +18,31 @@ def zone_creating(content, line_number):
         )
     return zone
 
+
+def connection_creating(content, line_number, network):
+    zone1_name, zone2_name, metadata = split_connection_content(content,
+                                                                line_number)
+    zone1 = network.zones[zone1_name]
+    zone2 = network.zones[zone2_name]
+    metadata_dict = parse_metadata(metadata, line_number)
+    max_links = int(metadata_dict.get("max_link_capacity", "1"))
+    connection = Connection(zone1, zone2, max_links)
+    return connection
+
+
 def build_map(data: list[tuple[str, str, int]]) -> Map:
     """Create a Map object from validated parser data."""
-
     network = Map()
-
     for line_type, content, line_number in data:
         if line_type in ("start_hub", "hub", "end_hub"):
             zone = zone_creating(content, line_number)
             network.add_zone(zone)
-
             if line_type == "start_hub":
                 network.start = zone
-
             elif line_type == "end_hub":
                 network.end = zone
-
         elif line_type == "connection":
-            network.add_connection()
-
+            connection = connection_creating(content, line_number, network)
+            network.add_connection(connection)
     return network
+
