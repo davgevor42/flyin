@@ -13,16 +13,14 @@ def parse_line(line):
 
     elif line.startswith("connection:"):
         return "connection", line[len("connection:"):].strip()
-    else:
-        raise ValueError("unknown line type")
+
+    return "unknown", line
 
 
 def parse_file(filename):
-    data = {}
+    data = []
 
     with open(filename, "r") as file:
-        first_line_found = False
-
         for line_number, line in enumerate(file, 1):
             line = line.strip()
 
@@ -31,16 +29,6 @@ def parse_file(filename):
 
             line_type, content = parse_line(line)
 
-            if not first_line_found:
-                if line_type != "nb_drones":
-                    raise ValueError(
-                        f"Line {line_number}: first line must be nb_drones"
-                    )
-                first_line_found = True
-
-            data[line_type] = content, line_number
-
-    if not first_line_found:
-        raise ValueError("File is empty")
+            data.append((line_type, content, line_number))
 
     return data

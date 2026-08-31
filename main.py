@@ -3,4 +3,6 @@ import validate
 
 if __name__ == "__main__":
     data = parse_file("01_linear_path.txt")
-    validate.validate_nb_drones(data["nb_drones"])
+
+    validate.validate_data(data)
+    print(data)
