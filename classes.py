@@ -45,3 +45,14 @@ class Map:
     def add_connection(self, connection: Connection) -> None:
         """Add a connection to the map."""
         self.connections.append(connection)
+    
+    def get_neighbors(self, zone):
+        neighbors = []
+
+        for connection in self.connections:
+            if connection.zone1 == zone:
+                neighbors.append(connection.zone2)
+            elif connection.zone2 == zone:
+                neighbors.append(connection.zone1)
+            
+        return neighbors
