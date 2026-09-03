@@ -26,10 +26,10 @@ if __name__ == "__main__":
             connection.max_link_capacity
         )
 
-    print("\nwaypoint2 neighbors are")
-    n = graph.get_neighbors(graph.zones["waypoint2"])
-    for i in n:
-        print(i.name)
+    #print("\nwaypoint2 neighbors are")
+    #n = graph.get_neighbors(graph.zones["waypoint2"])
+    #for i in n:
+        #print(i.name)
 
     v = visualizer.Visualizer(graph)
     v.run()
