@@ -2,6 +2,7 @@ from parser import parse_file
 import validate
 from graph_builder import build_map
 import visualizer
+import path
 
 if __name__ == "__main__":
     data = parse_file("01_linear_path.txt")
@@ -31,5 +32,19 @@ if __name__ == "__main__":
     #for i in n:
         #print(i.name)
 
-    v = visualizer.Visualizer(graph)
-    v.run()
+    #v = visualizer.Visualizer(graph)
+    #v.run()
+    finder = path.path(graph)
+
+    #start = graph.zones["start"]
+    #end = graph.zones["goal"]
+
+    result = finder.find_path(graph.start, graph.end)
+
+    print("############")
+
+    if not result:
+        print("No path found")
+
+    for zone in result:
+        print(zone.name)

@@ -45,7 +45,7 @@ class Map:
     def add_connection(self, connection: Connection) -> None:
         """Add a connection to the map."""
         self.connections.append(connection)
-    
+
     def get_neighbors(self, zone):
         neighbors = []
 
@@ -54,5 +54,13 @@ class Map:
                 neighbors.append(connection.zone2)
             elif connection.zone2 == zone:
                 neighbors.append(connection.zone1)
-            
+
         return neighbors
+
+    def get_cost(self, zone):
+        if zone.zone_type == "normal" or zone.zone_type == "priority":
+            return 1
+        elif zone.zone_type == "restricted":
+            return 2
+        elif zone.zone_type == "blocked":
+            return None

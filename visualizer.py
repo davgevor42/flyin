@@ -20,14 +20,14 @@ class Visualizer:
     def run(self):
         """Start the graphical interface."""
         self.root.mainloop()
-    
+
     def destroy(self):
         self.root.destroy()
 
     def map_to_screen(self, x, y):
         center_x = 100
-        center_y = 800
-        scale = 200
+        center_y = 400
+        scale = 100
 
         screen_x = center_x + x * scale
         screen_y = center_y - y * scale
@@ -36,7 +36,7 @@ class Visualizer:
 
     def draw_zone(self, zone):
         x, y = self.map_to_screen(zone.x, zone.y)
-        radius = 50
+        radius = 20
         self.canvas.create_oval(
             x - radius,
             y - radius,
@@ -46,7 +46,7 @@ class Visualizer:
         )
         self.canvas.create_text(
             x,
-            y - 100,
+            y - 50,
             text=zone.name
         )
 
