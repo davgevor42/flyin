@@ -3,7 +3,6 @@ class path:
     def __init__(self, graph):
         self.graph = graph
 
-
     def find_path(self, start, end):
         distance = {}
         previous = {}
@@ -48,7 +47,6 @@ class path:
                             priority_count[neighbor] = new_priority
                             previous[neighbor] = current
 
-
         path = []
         current = end
 
@@ -60,10 +58,7 @@ class path:
             current = previous[current]
         path.append(start)
         path.reverse()
-
-        print(path)
-        print(distance)
-
+        
         return path
 
 

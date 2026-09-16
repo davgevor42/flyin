@@ -65,6 +65,7 @@ class Map:
         elif zone.zone_type == "blocked":
             return None
 
+
 class Drone:
     def __init__(self, drone_id):
         self.id = drone_id
