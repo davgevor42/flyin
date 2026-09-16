@@ -3,12 +3,15 @@ import validate
 from graph_builder import build_map
 import visualizer
 import path
+from simulation import Simulation
 
 if __name__ == "__main__":
     data = parse_file("01_linear_path.txt")
 
     validate.validate_data(data)
     graph = build_map(data)
+
+    simulation = Simulation(graph, data)
 
     for name, zone in graph.zones.items():
         print(
@@ -43,8 +46,5 @@ if __name__ == "__main__":
 
     print("############")
 
-    if not result:
-        print("No path found")
-
-    for zone in result:
-        print(zone.name)
+    for drone in simulation.drones:
+        print(drone.id, [zone.name for zone in drone.path])

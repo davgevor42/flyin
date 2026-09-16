@@ -64,3 +64,10 @@ class Map:
             return 2
         elif zone.zone_type == "blocked":
             return None
+
+class Drone:
+    def __init__(self, drone_id):
+        self.id = drone_id
+        self.current_zone = None
+        self.path = []
+        self.path_index = 0
