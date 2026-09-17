@@ -72,3 +72,6 @@ class Drone:
         self.current_zone = None
         self.path = []
         self.path_index = 0
+        self.moving = False
+        self.next_zone = None
+        self.remaining_turns = 0

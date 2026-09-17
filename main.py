@@ -36,10 +36,10 @@ if __name__ == "__main__":
         #print(i.name)
     """
 
-    """
-    v = visualizer.Visualizer(graph)
-    v.run()
-    """
+    
+    #v = visualizer.Visualizer(graph)
+    #v.run()
+    
     finder = path.path(graph)
     result = finder.find_path(graph.start, graph.end)
 
