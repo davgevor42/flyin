@@ -35,7 +35,8 @@ class Simulation:
             if drone.path_index != len(drone.path) - 1:
                 next_zone = drone.path[drone.path_index + 1]
                 cost = self.network.get_cost(next_zone)
-                if self.can_enter_zone(next_zone):
+                if (self.can_enter_zone(next_zone)
+                        and self.can_use_connection(drone.current_zone, next_zone)):
                     drone.remaining_turns = cost
                     drone.next_zone = next_zone
                     drone.moving = True
@@ -46,6 +47,18 @@ class Simulation:
                 return 0
         return 1
 
+    def move_one_step(self):
+        step = 0
+        print(f"\n--- Step {step} ---")
+
+        for drone in self.drones:
+            self.move_drone(drone)
+
+        self.print_state()
+
+        step += 1
+
+    """
     def movement(self):
         step = 0
         while not self.is_finished():
@@ -54,7 +67,7 @@ class Simulation:
                 self.move_drone(drone)
             self.print_state()
             step += 1
-
+    """
     def can_enter_zone(self, zone):
         i = 0
         for drone in self.drones:
@@ -67,6 +80,25 @@ class Simulation:
         if i >= zone.max_drones:
             return 0
         return 1
+
+    def can_use_connection(self, current_zone, next_zone):
+        i = 0
+        for drone in self.drones:
+            if ((drone.current_zone == current_zone
+                 and drone.next_zone == next_zone)
+                    or (drone.current_zone == next_zone
+                        and drone.next_zone == current_zone)):
+                if drone.moving is True:
+                    i += 1
+        for con in self.network.connections:
+            if ((con.zone1 == current_zone
+                and con.zone2 == next_zone)
+                    or (con.zone1 == next_zone
+                        and con.zone2 == current_zone)):
+                if (i >= con.max_link_capacity):
+                    return 0
+        return 1
+
 
     def print_state(self):
         for drone in self.drones:

@@ -37,8 +37,8 @@ if __name__ == "__main__":
     """
 
     
-    #v = visualizer.Visualizer(graph)
-    #v.run()
+    v = visualizer.Visualizer(graph, simulation)
+    v.run()
     
     finder = path.path(graph)
     result = finder.find_path(graph.start, graph.end)
@@ -47,7 +47,3 @@ if __name__ == "__main__":
 
     for drone in simulation.drones:
         print(drone.id, [zone.name for zone in drone.path])
-    
-    simulation.movement()
-
-    
