@@ -12,6 +12,12 @@ if __name__ == "__main__":
     graph = build_map(data)
 
     simulation = Simulation(graph, data)
+    for info in simulation.path_infos:
+        print(
+            [zone.name for zone in info.zones],
+            "cot:", info.cost,
+            "priority:", info.priority
+        )
     """
     #for name, zone in graph.zones.items():
         #print(
@@ -36,14 +42,16 @@ if __name__ == "__main__":
         #print(i.name)
     """
 
-    
-    v = visualizer.Visualizer(graph, simulation)
-    v.run()
-    
+
+
+    #v = visualizer.Visualizer(graph, simulation)
+    #v.run()
+
     finder = path.path(graph)
     result = finder.find_path(graph.start, graph.end)
 
     print("############")
-
+"""
     for drone in simulation.drones:
         print(drone.id, [zone.name for zone in drone.path])
+"""

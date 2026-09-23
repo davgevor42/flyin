@@ -58,7 +58,61 @@ class path:
             current = previous[current]
         path.append(start)
         path.reverse()
-        
+
         return path
 
+    def find_all_paths(self, start, end):
+        paths = []
+        current_path = [start]
 
+        self.find_paths_recursive(
+            start,
+            end,
+            current_path,
+            paths
+        )
+
+        return paths
+
+    def find_paths_recursive(
+        self,
+        current,
+        end,
+        current_path,
+        paths
+        ):
+        if current == end:
+            paths.append(current_path.copy())
+            return
+
+        for neighbor in self.graph.get_neighbors(current):
+            cost = self.graph.get_cost(neighbor)
+
+            if cost is not None and neighbor not in current_path:
+                current_path.append(neighbor)
+
+                self.find_paths_recursive(
+                    neighbor,
+                    end,
+                    current_path,
+                    paths
+                )
+
+                current_path.pop()
+
+    def get_path_cost(self, current_path):
+        total_cost = 0
+        for zone in current_path[1:]:
+            cost = self.graph.get_cost(zone)
+            if cost is not None:
+                total_cost += cost
+        return total_cost
+
+    def get_priority_count(self, current_path):
+        count = 0
+
+        for zone in current_path[1:]:
+            if zone.zone_type == "priority":
+                count += 1
+
+        return count

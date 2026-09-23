@@ -1,4 +1,4 @@
-from classes import Drone
+from classes import Drone, PathInfo
 from path import path
 
 class Simulation:
@@ -7,8 +7,16 @@ class Simulation:
         self.drones = []
 
         self.pathfinder = path(network)
+        self.path_infos = []
+
+        paths = self.pathfinder.find_all_paths(
+        self.network.start,
+        self.network.end
+        )
+
         self.create_drones(int(data[0][1]))
-        self.assign_path()
+        self.find_paths()
+        #self.assign_path()
 
     def create_drones(self, number_of_drones):
         for i in range(number_of_drones):
@@ -99,6 +107,23 @@ class Simulation:
                     return 0
         return 1
 
+    def find_paths(self):
+        paths = self.pathfinder.find_all_paths(
+            self.network.start,
+            self.network.end
+        )
+
+        for current_path in paths:
+            cost = self.pathfinder.get_path_cost(current_path)
+            priority = self.pathfinder.get_priority_count(current_path)
+
+            path_info = PathInfo(
+                current_path,
+                cost,
+                priority
+            )
+
+            self.path_infos.append(path_info)
 
     def print_state(self):
         for drone in self.drones:
