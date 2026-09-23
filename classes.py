@@ -76,8 +76,12 @@ class Drone:
         self.next_zone = None
         self.remaining_turns = 0
 
+
 class PathInfo:
     def __init__(self, zones, cost, priority):
         self.zones = zones
-        self.cost = cost,
+        self.cost = cost
         self.priority = priority
+
+    def uses_zone(self, zone):
+        return zone in self.zones
