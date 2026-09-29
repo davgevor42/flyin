@@ -15,7 +15,7 @@ class Visualizer:
         self.canvas.pack(fill="both", expand=True)
         self.button = tk.Button(self.root, text="Next Step", command=self.next_step)
         self.button.pack()
-        
+
         for i in self.graph.connections:
             self.draw_connection(i)
         for i in self.graph.zones.values():
@@ -32,7 +32,7 @@ class Visualizer:
     def map_to_screen(self, x, y):
         center_x = 100
         center_y = 400
-        scale = 200
+        scale = 100
 
         screen_x = center_x + x * scale
         screen_y = center_y - y * scale
@@ -41,17 +41,22 @@ class Visualizer:
 
     def draw_zone(self, zone):
         x, y = self.map_to_screen(zone.x, zone.y)
-        radius = 50
-        self.canvas.create_oval(
-            x - radius,
-            y - radius,
-            x + radius,
-            y + radius,
-            fill=zone.color
-        )
+        radius = 25
+
+        if zone.color == "rainbow":
+            self.draw_rainbow_zone(x, y, radius)
+        else:
+            self.canvas.create_oval(
+                x - radius,
+                y - radius,
+                x + radius,
+                y + radius,
+                fill=zone.color
+            )
+
         self.canvas.create_text(
             x,
-            y - 50,
+            y - radius,
             text=zone.name
         )
 
@@ -103,6 +108,8 @@ class Visualizer:
             self.draw_drone(drone, offset)
 
     def next_step(self):
+        if self.simulation.is_finished():
+            return
         self.simulation.move_one_step()
         self.draw_drones(self.simulation.drones)
 
@@ -143,4 +150,28 @@ class Visualizer:
         max_y = max(zone.y for zone in zones)
 
         return min_x, max_x, min_y, max_y
+
+    def draw_rainbow_zone(self, x, y, radius):
+        colors = [
+            "#ff0000",
+            "#ff7f00",
+            "#ffff00",
+            "#00ff00",
+            "#0000ff",
+            "#4b0082",
+            "#9400d3"
+        ]
+
+        steps = len(colors)
+
+        for i, color in enumerate(colors):
+            current_radius = radius - i * (radius // steps)
+
+            self.canvas.create_oval(
+                x - current_radius,
+                y - current_radius,
+                x + current_radius,
+                y + current_radius,
+                fill=color,
+            )
 

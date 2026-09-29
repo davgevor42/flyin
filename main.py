@@ -44,8 +44,8 @@ if __name__ == "__main__":
 
 
 
-    #v = visualizer.Visualizer(graph, simulation)
-    #v.run()
+    v = visualizer.Visualizer(graph, simulation)
+    v.run()
 
     finder = path.path(graph)
     result = finder.find_path(graph.start, graph.end)

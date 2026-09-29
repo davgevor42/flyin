@@ -82,6 +82,7 @@ class PathInfo:
         self.zones = zones
         self.cost = cost
         self.priority = priority
+        self.assigned_drones = 0
 
     def uses_zone(self, zone):
         return zone in self.zones

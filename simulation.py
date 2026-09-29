@@ -9,29 +9,20 @@ class Simulation:
         self.pathfinder = path(network)
         self.path_infos = []
 
-        paths = self.pathfinder.find_all_paths(
-        self.network.start,
-        self.network.end
-        )
-
         self.create_drones(int(data[0][1]))
         self.find_paths()
         self.sort_path()
-        self.assign_paths()
-        for path_info in self.path_infos:
-            count = self.count_path_usage(path_info)
-            print(count)
-        for path_info in self.path_infos:
-            print(
-                [zone.name for zone in path_info.zones],
-                self.can_assign_path(path_info)
-            )
-        for drone in self.drones:
-            print(
-                "Drone", drone.id,
-                "->",
-                [zone.name for zone in drone.path]
-            )
+
+        for i in range(4):
+            best_path = self.get_best_path()
+
+            if best_path is not None:
+                print("DRONE", i + 1)
+                print([zone.name for zone in best_path.zones])
+                print("cost:", best_path.cost)
+                print("assigned before:", best_path.assigned_drones)
+
+                best_path.assigned_drones += 1
 
     def create_drones(self, number_of_drones):
         for i in range(number_of_drones):
@@ -40,12 +31,14 @@ class Simulation:
             self.drones.append(drone)
 
     def assign_paths(self):
-        if not self.path_infos:
-            return
+        for drone in self.drones:
+            best_path = self.get_best_path()
 
-        for i, drone in enumerate(self.drones):
-            path_info = self.path_infos[i % len(self.path_infos)]
-            drone.path = path_info.zones
+            if best_path is None:
+                return
+
+            drone.path = best_path.zones.copy()
+            best_path.assigned_drones += 1
 
     def move_drone(self, drone):
         if drone.moving:
@@ -169,7 +162,7 @@ class Simulation:
             if drone.path == path_info.zones:
                 count += 1
         return count
-    
+
     def count_zone_usage(self, zone):
         count = 0
 
@@ -187,7 +180,7 @@ class Simulation:
 
             if usage >= zone.max_drones:
                 return False
-            
+
         return True
 
     def assign_waiting_drones(self):
@@ -199,12 +192,32 @@ class Simulation:
                     drone.path = path_info.zones
                     break
 
+    def get_best_path(self):
+        best_path = None
+        for path_info in self.path_infos:
+            if best_path is None:
+                best_path = path_info
+                continue
+            if path_info.cost < best_path.cost:
+                best_path = path_info
+            elif path_info.cost == best_path.cost:
+                if path_info.priority > best_path.priority:
+                    best_path = path_info
+                elif path_info.priority == best_path.priority:
+                    if path_info.assigned_drones < best_path.assigned_drones:
+                        best_path = path_info
+        return best_path
+
     def print_state(self):
         for drone in self.drones:
             print(
                 drone.id,
                 drone.current_zone.name,
+                "next:",
                 drone.next_zone.name if drone.next_zone else None,
+                "moving:",
+                drone.moving,
+                "remaining:",
                 drone.remaining_turns
             )
 
