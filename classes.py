@@ -60,29 +60,36 @@ class Map:
     def get_cost(self, zone):
         if zone.zone_type == "normal" or zone.zone_type == "priority":
             return 1
-        elif zone.zone_type == "restricted":
+        if zone.zone_type == "restricted":
             return 2
-        elif zone.zone_type == "blocked":
-            return None
-
+        return None
+    
+    def get_connection(self, zone1, zone2):
+        for connection in self.connections:
+            if ((connection.zone1 == zone1 and connection.zone2 == zone2)
+                or (connection.zone1 == zone2
+                    and connection.zone2 == zone1)):
+                return connection
+        return None
 
 class Drone:
-    def __init__(self, drone_id):
+    def __init__(self, drone_id: int, start_zone: Zone) -> None:
         self.id = drone_id
-        self.current_zone = None
-        self.path = []
+        self.current_zone = Zone = start_zone
+        self.path: list[Zone] = []
         self.path_index = 0
         self.moving = False
-        self.next_zone = None
+        self.next_zone = Zone | None = None 
         self.remaining_turns = 0
 
 
 class PathInfo:
-    def __init__(self, zones, cost, priority):
+    def __init__(self, zones, cost, priority, capacity) -> None:
         self.zones = zones
         self.cost = cost
         self.priority = priority
+        self.capacity = capacity
         self.assigned_drones = 0
 
-    def uses_zone(self, zone):
+    def uses_zone(self, zone) -> bool:
         return zone in self.zones

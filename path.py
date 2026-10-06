@@ -3,11 +3,14 @@ class path:
     def __init__(self, graph):
         self.graph = graph
 
-    def find_path(self, start, end):
+    def find_path(self, start, end, penalties=None):
         distance = {}
         previous = {}
         priority_count = {}
         visited = set()
+
+        if penalties is None:
+            penalties = {}
 
         for zone in self.graph.zones.values():
             distance[zone] = float("inf")
@@ -27,13 +30,11 @@ class path:
             if current == end:
                 break
             visited.add(current)
-
             neighbors = self.graph.get_neighbors(current)
-
             for neighbor in neighbors:
                 cost = self.graph.get_cost(neighbor)
                 if cost is not None:
-                    new_distance = distance[current] + cost
+                    new_distance = (distance[current] + cost + penalties.get(neighbor, 0))
                     new_priority = priority_count[current]
                     if neighbor.zone_type == "priority":
                         new_priority += 1
@@ -46,7 +47,6 @@ class path:
                             distance[neighbor] = new_distance
                             priority_count[neighbor] = new_priority
                             previous[neighbor] = current
-
         path = []
         current = end
 
@@ -61,45 +61,6 @@ class path:
 
         return path
 
-    def find_all_paths(self, start, end):
-        paths = []
-        current_path = [start]
-
-        self.find_paths_recursive(
-            start,
-            end,
-            current_path,
-            paths
-        )
-
-        return paths
-
-    def find_paths_recursive(
-        self,
-        current,
-        end,
-        current_path,
-        paths
-        ):
-        if current == end:
-            paths.append(current_path.copy())
-            return
-
-        for neighbor in self.graph.get_neighbors(current):
-            cost = self.graph.get_cost(neighbor)
-
-            if cost is not None and neighbor not in current_path:
-                current_path.append(neighbor)
-
-                self.find_paths_recursive(
-                    neighbor,
-                    end,
-                    current_path,
-                    paths
-                )
-
-                current_path.pop()
-
     def get_path_cost(self, current_path):
         total_cost = 0
         for zone in current_path[1:]:
@@ -108,6 +69,18 @@ class path:
                 total_cost += cost
         return total_cost
 
+    def get_path_capacity(self, current_path):
+        capacity = None
+        for i in range(len(current_path) - 1):
+            link = self.graph.get_connection(current_path[i], current_path[i + 1])
+            if link is not None:
+                value = link.max_link_capacity
+                capacity = value if capacity is None else min(capacity, value)
+        for zone in current_path[1:-1]:
+            capacity = (zone.max_drones if capacity is None
+                        else min(capacity, zone.max_drones))
+        return capacity if capacity is not None else 1
+    
     def get_priority_count(self, current_path):
         count = 0
 

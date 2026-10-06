@@ -2,12 +2,14 @@ from classes import Zone, Connection, Map
 from validate import split_hub_content, parse_metadata, split_connection_content
 
 
-def zone_creating(content, line_number):
+def zone_creating(content, line_number, line_type_is_regular=True):
     name, x, y, metadata = split_hub_content(content, line_number)
     metadata_dict = parse_metadata(metadata, line_number)
     zone_type = metadata_dict.get("zone", "normal")
     color = metadata_dict.get("color", "none")
-    max_drones = int(metadata_dict.get("max_drones", "1"))
+    max_drones = 1
+    if line_type_is_regular:
+        max_drones = int(metadata_dict.get("max_drones", "1"))
     zone = Zone(
         name,
         int(x),
@@ -35,7 +37,7 @@ def build_map(data: list[tuple[str, str, int]]) -> Map:
     network = Map()
     for line_type, content, line_number in data:
         if line_type in ("start_hub", "hub", "end_hub"):
-            zone = zone_creating(content, line_number)
+            zone = zone_creating(content, line_number, line_type == "hub")
             network.add_zone(zone)
             if line_type == "start_hub":
                 network.start = zone
