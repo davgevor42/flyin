@@ -1,26 +1,36 @@
+import sys
+
 from parser import parse_file
 import validate
 from graph_builder import build_map
-import visualizer
-import path
 from simulation import Simulation
+from visualizer import Visualizer
+import tkinter
+
+
+def main(argv: list[str]) -> int:
+    """Load a map, prepare the simulation and open the window."""
+    if len(argv) != 2:
+        print("Usage: python3 main.py <map_file>", file=sys.stderr)
+        return 1
+    try:
+        data = parse_file(argv[1])
+        validate.validate_data(data)
+        graph = build_map(data)
+        simulation = Simulation(graph, data)
+    except OSError as error:
+        print(f"Error: cannot read '{argv[1]}': {error}", file=sys.stderr)
+        return 1
+    except (ValueError, KeyError) as error:
+        print(f"Error: {error}", file=sys.stderr)
+        return 1
+    try:
+        Visualizer(graph, simulation).run()
+    except tkinter.TclError as error:
+        print(f"Error: cannot open the window: {error}", file=sys.stderr)
+        return 1
+    return 0
+
 
 if __name__ == "__main__":
-    data = parse_file("01_linear_path.txt")
-
-    validate.validate_data(data)
-    graph = build_map(data)
-
-    simulation = Simulation(graph, data)
-
-    v = visualizer.Visualizer(graph, simulation)
-    v.run()
-
-    finder = path.path(graph)
-    result = finder.find_path(graph.start, graph.end)
-
-    print("############")
-"""
-    for drone in simulation.drones:
-        print(drone.id, [zone.name for zone in drone.path])
-"""
+    sys.exit(main(sys.argv))

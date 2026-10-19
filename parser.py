@@ -1,4 +1,4 @@
-def parse_line(line):
+def parse_line(line: str) -> tuple[str, str]:
     if line.startswith("nb_drones:"):
         return "nb_drones", line[len("nb_drones:"):].strip()
 
@@ -17,8 +17,8 @@ def parse_line(line):
     return "unknown", line
 
 
-def parse_file(filename):
-    data = []
+def parse_file(filename: str) -> list[tuple[str, str, int]]:
+    data: list[tuple[str, str, int]] = []
 
     with open(filename, "r") as file:
         for line_number, line in enumerate(file, 1):

@@ -1,5 +1,6 @@
 class Zone:
     """Represent a zone in the drone network."""
+
     def __init__(
         self,
         name: str,
@@ -19,6 +20,7 @@ class Zone:
 
 class Connection:
     """Represent a bidirectional connection between two zones."""
+
     def __init__(
         self,
         zone1: "Zone",
@@ -32,6 +34,7 @@ class Connection:
 
 class Map:
     """Represent the complete drone network."""
+
     def __init__(self) -> None:
         self.zones: dict[str, Zone] = {}
         self.connections: list[Connection] = []
@@ -46,8 +49,8 @@ class Map:
         """Add a connection to the map."""
         self.connections.append(connection)
 
-    def get_neighbors(self, zone):
-        neighbors = []
+    def get_neighbors(self, zone: Zone) -> list[Zone]:
+        neighbors: list[Zone] = []
 
         for connection in self.connections:
             if connection.zone1 == zone:
@@ -57,14 +60,15 @@ class Map:
 
         return neighbors
 
-    def get_cost(self, zone):
+    def get_cost(self, zone: Zone) -> int | None:
         if zone.zone_type == "normal" or zone.zone_type == "priority":
             return 1
         if zone.zone_type == "restricted":
             return 2
         return None
-    
-    def get_connection(self, zone1, zone2):
+
+    def get_connection(self, zone1: Zone, zone2: Zone
+                       ) -> Connection | None:
         for connection in self.connections:
             if ((connection.zone1 == zone1 and connection.zone2 == zone2)
                 or (connection.zone1 == zone2
@@ -72,24 +76,26 @@ class Map:
                 return connection
         return None
 
+
 class Drone:
     def __init__(self, drone_id: int, start_zone: Zone) -> None:
         self.id = drone_id
-        self.current_zone = Zone = start_zone
+        self.current_zone: Zone = start_zone
         self.path: list[Zone] = []
         self.path_index = 0
         self.moving = False
-        self.next_zone = Zone | None = None 
+        self.next_zone: Zone | None = None
         self.remaining_turns = 0
 
 
 class PathInfo:
-    def __init__(self, zones, cost, priority, capacity) -> None:
+    def __init__(self, zones: list[Zone], cost: int, priority: int,
+                 capacity: int) -> None:
         self.zones = zones
         self.cost = cost
         self.priority = priority
         self.capacity = capacity
         self.assigned_drones = 0
 
-    def uses_zone(self, zone) -> bool:
+    def uses_zone(self, zone: Zone) -> bool:
         return zone in self.zones

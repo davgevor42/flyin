@@ -1,8 +1,10 @@
 from classes import Zone, Connection, Map
-from validate import split_hub_content, parse_metadata, split_connection_content
+from validate import split_hub_content, parse_metadata
+from validate import split_connection_content
 
 
-def zone_creating(content, line_number, line_type_is_regular=True):
+def zone_creating(content: str, line_number: int,
+                  line_type_is_regular: bool = True) -> Zone:
     name, x, y, metadata = split_hub_content(content, line_number)
     metadata_dict = parse_metadata(metadata, line_number)
     zone_type = metadata_dict.get("zone", "normal")
@@ -21,7 +23,8 @@ def zone_creating(content, line_number, line_type_is_regular=True):
     return zone
 
 
-def connection_creating(content, line_number, network):
+def connection_creating(content: str, line_number: int,
+                        network: Map) -> Connection:
     zone1_name, zone2_name, metadata = split_connection_content(content,
                                                                 line_number)
     zone1 = network.zones[zone1_name]
@@ -47,4 +50,3 @@ def build_map(data: list[tuple[str, str, int]]) -> Map:
             connection = connection_creating(content, line_number, network)
             network.add_connection(connection)
     return network
-

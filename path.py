@@ -1,13 +1,17 @@
+from classes import Map, Zone
+
+
 class path:
 
-    def __init__(self, graph):
+    def __init__(self, graph: Map) -> None:
         self.graph = graph
 
-    def find_path(self, start, end, penalties=None):
-        distance = {}
-        previous = {}
-        priority_count = {}
-        visited = set()
+    def find_path(self, start: Zone, end: Zone,
+                  penalties: dict[Zone, int] | None = None) -> list[Zone]:
+        distance: dict[Zone, float] = {}
+        previous: dict[Zone, Zone] = {}
+        priority_count: dict[Zone, int] = {}
+        visited: set[Zone] = set()
 
         if penalties is None:
             penalties = {}
@@ -34,7 +38,8 @@ class path:
             for neighbor in neighbors:
                 cost = self.graph.get_cost(neighbor)
                 if cost is not None:
-                    new_distance = (distance[current] + cost + penalties.get(neighbor, 0))
+                    new_distance = (distance[current] + cost
+                                    + penalties.get(neighbor, 0))
                     new_priority = priority_count[current]
                     if neighbor.zone_type == "priority":
                         new_priority += 1
@@ -47,7 +52,7 @@ class path:
                             distance[neighbor] = new_distance
                             priority_count[neighbor] = new_priority
                             previous[neighbor] = current
-        path = []
+        path: list[Zone] = []
         current = end
 
         if end != start and end not in previous:
@@ -61,7 +66,7 @@ class path:
 
         return path
 
-    def get_path_cost(self, current_path):
+    def get_path_cost(self, current_path: list[Zone]) -> int:
         total_cost = 0
         for zone in current_path[1:]:
             cost = self.graph.get_cost(zone)
@@ -69,10 +74,11 @@ class path:
                 total_cost += cost
         return total_cost
 
-    def get_path_capacity(self, current_path):
-        capacity = None
+    def get_path_capacity(self, current_path: list[Zone]) -> int:
+        capacity: int | None = None
         for i in range(len(current_path) - 1):
-            link = self.graph.get_connection(current_path[i], current_path[i + 1])
+            link = self.graph.get_connection(
+                    current_path[i], current_path[i + 1])
             if link is not None:
                 value = link.max_link_capacity
                 capacity = value if capacity is None else min(capacity, value)
@@ -80,8 +86,8 @@ class path:
             capacity = (zone.max_drones if capacity is None
                         else min(capacity, zone.max_drones))
         return capacity if capacity is not None else 1
-    
-    def get_priority_count(self, current_path):
+
+    def get_priority_count(self, current_path: list[Zone]) -> int:
         count = 0
 
         for zone in current_path[1:]:
