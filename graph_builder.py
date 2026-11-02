@@ -1,52 +1,61 @@
+"""Build a Map object from validated records."""
+
 from classes import Zone, Connection, Map
-from validate import split_hub_content, parse_metadata
-from validate import split_connection_content
+from validate import Validate
 
 
-def zone_creating(content: str, line_number: int,
-                  line_type_is_regular: bool = True) -> Zone:
-    name, x, y, metadata = split_hub_content(content, line_number)
-    metadata_dict = parse_metadata(metadata, line_number)
-    zone_type = metadata_dict.get("zone", "normal")
-    color = metadata_dict.get("color", "none")
-    max_drones = 1
-    if line_type_is_regular:
-        max_drones = int(metadata_dict.get("max_drones", "1"))
-    zone = Zone(
-        name,
-        int(x),
-        int(y),
-        zone_type,
-        color,
-        max_drones
-        )
-    return zone
+class MapBuilder:
+    """Build a Map object from validated parser data."""
 
+    @staticmethod
+    def zone_creating(content: str, line_number: int,
+                      line_type_is_regular: bool = True) -> Zone:
+        """Create a zone; start and end zones ignore max_drones."""
+        name, x, y, metadata = Validate.split_hub_content(content, line_number)
+        metadata_dict = Validate.parse_metadata(metadata, line_number)
+        zone_type = metadata_dict.get("zone", "normal")
+        color = metadata_dict.get("color", "none")
+        max_drones = 1
+        if line_type_is_regular:
+            max_drones = int(metadata_dict.get("max_drones", "1"))
+        zone = Zone(
+            name,
+            int(x),
+            int(y),
+            zone_type,
+            color,
+            max_drones
+            )
+        return zone
 
-def connection_creating(content: str, line_number: int,
-                        network: Map) -> Connection:
-    zone1_name, zone2_name, metadata = split_connection_content(content,
-                                                                line_number)
-    zone1 = network.zones[zone1_name]
-    zone2 = network.zones[zone2_name]
-    metadata_dict = parse_metadata(metadata, line_number)
-    max_links = int(metadata_dict.get("max_link_capacity", "1"))
-    connection = Connection(zone1, zone2, max_links)
-    return connection
+    @staticmethod
+    def connection_creating(content: str, line_number: int,
+                            network: Map) -> Connection:
+        """Create a connection between two existing zones."""
+        zone1_name, zone2_name, metadata = Validate.split_connection_content(
+            content, line_number)
+        zone1 = network.zones[zone1_name]
+        zone2 = network.zones[zone2_name]
+        metadata_dict = Validate.parse_metadata(metadata, line_number)
+        max_links = int(metadata_dict.get("max_link_capacity", "1"))
+        connection = Connection(zone1, zone2, max_links)
+        return connection
 
-
-def build_map(data: list[tuple[str, str, int]]) -> Map:
-    """Create a Map object from validated parser data."""
-    network = Map()
-    for line_type, content, line_number in data:
-        if line_type in ("start_hub", "hub", "end_hub"):
-            zone = zone_creating(content, line_number, line_type == "hub")
-            network.add_zone(zone)
-            if line_type == "start_hub":
-                network.start = zone
-            elif line_type == "end_hub":
-                network.end = zone
-        elif line_type == "connection":
-            connection = connection_creating(content, line_number, network)
-            network.add_connection(connection)
-    return network
+    @staticmethod
+    def build_map(data: list[tuple[str, str, int]]) -> Map:
+        """Create a Map object from validated parser data."""
+        network = Map()
+        for line_type, content, line_number in data:
+            if line_type in ("start_hub", "hub", "end_hub"):
+                zone = MapBuilder.zone_creating(
+                    content, line_number, line_type == "hub")
+                network.add_zone(zone)
+                if line_type == "start_hub":
+                    network.start = zone
+                elif line_type == "end_hub":
+                    network.end = zone
+            elif line_type == "connection":
+                connection = MapBuilder.connection_creating(
+                    content, line_number, network)
+                network.add_connection(connection)
+        return network

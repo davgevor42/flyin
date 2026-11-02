@@ -1,13 +1,22 @@
+"""Pathfinding on the drone network."""
+
 from classes import Map, Zone
 
 
 class path:
+    """Find paths between zones with Dijkstra's algorithm."""
 
     def __init__(self, graph: Map) -> None:
+        """Store the map to search in."""
         self.graph = graph
 
     def find_path(self, start: Zone, end: Zone,
                   penalties: dict[Zone, int] | None = None) -> list[Zone]:
+        """Return the cheapest path from start to end, or [] if none.
+
+        `penalties` adds extra cost to some zones, only to steer the
+        search away from them (used to find alternative paths).
+        """
         distance: dict[Zone, float] = {}
         previous: dict[Zone, Zone] = {}
         priority_count: dict[Zone, int] = {}
@@ -67,6 +76,7 @@ class path:
         return path
 
     def get_path_cost(self, current_path: list[Zone]) -> int:
+        """Return the total turns needed to follow the path."""
         total_cost = 0
         for zone in current_path[1:]:
             cost = self.graph.get_cost(zone)
@@ -75,6 +85,7 @@ class path:
         return total_cost
 
     def get_path_capacity(self, current_path: list[Zone]) -> int:
+        """Return how many drones per turn can enter the path."""
         capacity: int | None = None
         for i in range(len(current_path) - 1):
             link = self.graph.get_connection(
@@ -88,8 +99,8 @@ class path:
         return capacity if capacity is not None else 1
 
     def get_priority_count(self, current_path: list[Zone]) -> int:
+        """Return the number of priority zones on the path."""
         count = 0
-
         for zone in current_path[1:]:
             if zone.zone_type == "priority":
                 count += 1

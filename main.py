@@ -1,11 +1,13 @@
-import sys
+"""Entry point: load a map and open the drone simulation window."""
 
-from parser import parse_file
-import validate
-from graph_builder import build_map
-from simulation import Simulation
-from visualizer import Visualizer
+import sys
 import tkinter
+
+from graph_builder import MapBuilder
+from parser import MapParser
+from simulation import Simulation
+from validate import Validate
+from visualizer import Visualizer
 
 
 def main(argv: list[str]) -> int:
@@ -14,9 +16,9 @@ def main(argv: list[str]) -> int:
         print("Usage: python3 main.py <map_file>", file=sys.stderr)
         return 1
     try:
-        data = parse_file(argv[1])
-        validate.validate_data(data)
-        graph = build_map(data)
+        data = MapParser.parse_file(argv[1])
+        Validate.validate_data(data)
+        graph = MapBuilder.build_map(data)
         simulation = Simulation(graph, data)
     except OSError as error:
         print(f"Error: cannot read '{argv[1]}': {error}", file=sys.stderr)

@@ -1,3 +1,6 @@
+"""Data classes of the drone network."""
+
+
 class Zone:
     """Represent a zone in the drone network."""
 
@@ -10,6 +13,7 @@ class Zone:
         color: str = "none",
         max_drones: int = 1
     ) -> None:
+        """Create a zone with its type, color and capacity."""
         self.name = name
         self.x = x
         self.y = y
@@ -27,6 +31,7 @@ class Connection:
         zone2: "Zone",
         max_link_capacity: int = 1
     ) -> None:
+        """Create a connection with its capacity."""
         self.zone1 = zone1
         self.zone2 = zone2
         self.max_link_capacity = max_link_capacity
@@ -36,6 +41,7 @@ class Map:
     """Represent the complete drone network."""
 
     def __init__(self) -> None:
+        """Create an empty map."""
         self.zones: dict[str, Zone] = {}
         self.connections: list[Connection] = []
         self.start: Zone | None = None
@@ -50,6 +56,7 @@ class Map:
         self.connections.append(connection)
 
     def get_neighbors(self, zone: Zone) -> list[Zone]:
+        """Return the zones connected to the given zone."""
         neighbors: list[Zone] = []
 
         for connection in self.connections:
@@ -61,6 +68,7 @@ class Map:
         return neighbors
 
     def get_cost(self, zone: Zone) -> int | None:
+        """Return the turns needed to enter a zone, None if blocked."""
         if zone.zone_type == "normal" or zone.zone_type == "priority":
             return 1
         if zone.zone_type == "restricted":
@@ -69,6 +77,7 @@ class Map:
 
     def get_connection(self, zone1: Zone, zone2: Zone
                        ) -> Connection | None:
+        """Return the connection between two zones, in any direction."""
         for connection in self.connections:
             if ((connection.zone1 == zone1 and connection.zone2 == zone2)
                 or (connection.zone1 == zone2
@@ -78,7 +87,10 @@ class Map:
 
 
 class Drone:
+    """Represent one drone and its movement state."""
+
     def __init__(self, drone_id: int, start_zone: Zone) -> None:
+        """Create a drone standing in the start zone."""
         self.id = drone_id
         self.current_zone: Zone = start_zone
         self.path: list[Zone] = []
@@ -89,8 +101,11 @@ class Drone:
 
 
 class PathInfo:
+    """Describe a path with its cost, priority and capacity."""
+
     def __init__(self, zones: list[Zone], cost: int, priority: int,
                  capacity: int) -> None:
+        """Create the description of a path."""
         self.zones = zones
         self.cost = cost
         self.priority = priority
@@ -98,4 +113,5 @@ class PathInfo:
         self.assigned_drones = 0
 
     def uses_zone(self, zone: Zone) -> bool:
+        """Return True if the path goes through the zone."""
         return zone in self.zones

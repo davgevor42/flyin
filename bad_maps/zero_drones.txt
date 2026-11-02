@@ -1,0 +1,3 @@
+nb_drones: 0
+start_hub: s 0 0
+end_hub: g 2 0

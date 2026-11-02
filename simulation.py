@@ -1,9 +1,14 @@
+"""Turn-by-turn drone simulation."""
+
 from classes import Drone, PathInfo, Map, Zone
 from path import path
 
 
 class Simulation:
+    """Plan the paths of the drones and play the turns."""
+
     def __init__(self, network: Map, data: list[tuple[str, str, int]]) -> None:
+        """Create the drones, find the paths and choose the assignment."""
         self.network = network
         self.drones: list[Drone] = []
         self.turn = 0
@@ -20,6 +25,7 @@ class Simulation:
         self.verbose = True
 
     def create_drones(self, number_of_drones: int) -> None:
+        """Create the drones, all standing in the start zone."""
         start = self.network.start
         if start is None:
             raise ValueError("Missing start_hub")
@@ -27,6 +33,7 @@ class Simulation:
             self.drones.append(Drone(i + 1, start))
 
     def find_paths(self) -> None:
+        """Find several different paths with penalized Dijkstra runs."""
         start, end = self.network.start, self.network.end
         if start is None or end is None:
             raise ValueError("Missing start_hub or end_hub")
@@ -54,13 +61,16 @@ class Simulation:
             raise ValueError("No path between start_hub and end_hub")
 
     def sort_path(self) -> None:
+        """Sort the paths by cost, then by number of priority zones."""
         self.path_infos.sort(key=lambda info: (info.cost, -info.priority))
 
     def estimated_finish(self, path_infos: PathInfo) -> int:
+        """Return the turn at which one more drone would arrive."""
         return (path_infos.cost + path_infos.assigned_drones
                 // path_infos.capacity)
 
     def get_best_path(self) -> PathInfo:
+        """Return the candidate path where a new drone arrives first."""
         best_path = self.candidates[0]
         for path_info in self.candidates[1:]:
             finish = self.estimated_finish(path_info)
@@ -76,6 +86,7 @@ class Simulation:
         return best_path
 
     def assign_paths(self, nb_paths: int) -> None:
+        """Give every drone one of the nb_paths best paths."""
         self.candidates = self.path_infos[:nb_paths]
         for info in self.path_infos:
             info.assigned_drones = 0
@@ -85,6 +96,7 @@ class Simulation:
             best_path.assigned_drones += 1
 
     def move_one_step(self) -> str:
+        """Play one turn and return its output line."""
         self.turn += 1
         events: dict[int, str] = {}
 
@@ -115,6 +127,11 @@ class Simulation:
     def accept_moves(
             self, proposed_moves: list[tuple[Drone, Zone]]
             ) -> list[tuple[Drone, Zone]]:
+        """Accept the proposed moves that respect all capacities.
+
+        The loop repeats while something changes, because a drone that
+        leaves a zone frees room for another one in the same turn.
+        """
         accepted_moves: list[tuple[Drone, Zone]] = []
         pending = list(proposed_moves)
         changed = True
@@ -134,6 +151,7 @@ class Simulation:
     def check_arrivals(
             self, accepted_moves: list[tuple[Drone, Zone]]
             ) -> None:
+        """Raise RuntimeError if a drone in flight has no room to land."""
         for drone in self.drones:
             zone = drone.next_zone
             if not drone.moving or zone is None:
@@ -151,6 +169,7 @@ class Simulation:
 
     def can_accept_move(self, accepted_moves: list[tuple[Drone, Zone]],
                         next_zone: Zone) -> bool:
+        """Return True if the zone has room for one more drone."""
         if next_zone == self.network.start or next_zone == self.network.end:
             return True
         if self.optimistic and self.network.get_cost(next_zone) == 2:
@@ -164,6 +183,7 @@ class Simulation:
 
     def can_use_connection(self, accepted_moves: list[tuple[Drone, Zone]],
                            current_zone: Zone, next_zone: Zone) -> bool:
+        """Return True if the connection can carry one more drone."""
         connection = self.network.get_connection(current_zone, next_zone)
         if connection is None:
             return False
@@ -175,6 +195,7 @@ class Simulation:
         return used < connection.max_link_capacity
 
     def get_proposed_move(self, drone: Drone) -> Zone | None:
+        """Return the next zone of the drone's path, or None."""
         if drone.moving:
             return None
         if drone.path_index == len(drone.path) - 1:
@@ -185,6 +206,7 @@ class Simulation:
         return next_zone
 
     def apply_move(self, drone: Drone, next_zone: Zone) -> str:
+        """Start a move and return its output text."""
         cost = self.network.get_cost(next_zone)
         origin = drone.current_zone
         if cost == 1:
@@ -197,6 +219,7 @@ class Simulation:
         return f"D{drone.id}-{origin.name}-{next_zone.name}"
 
     def finish_moving_drone(self, drone: Drone) -> bool:
+        """Land a drone in flight; return True if it arrived."""
         if not drone.moving or drone.next_zone is None:
             return False
         drone.remaining_turns -= 1
@@ -209,24 +232,29 @@ class Simulation:
         return False
 
     def count_current_drones(self, zone: Zone) -> int:
+        """Return the number of drones standing in the zone."""
         return sum(1 for d in self.drones
                    if d.current_zone == zone and not d.moving)
 
     def count_leaving_drones(self, zone: Zone,
                              accepted_moves: list[tuple[Drone, Zone]]) -> int:
+        """Return how many accepted moves leave the zone."""
         return sum(1 for d, _ in accepted_moves if d.current_zone == zone)
 
     def count_proposed_entries(self, moves: list[tuple[Drone, Zone]],
                                zone: Zone) -> int:
+        """Return how many of the moves enter the zone."""
         if self.optimistic and self.network.get_cost(zone) == 2:
             return 0
         return sum(1 for _, nz in moves if nz == zone)
 
     def count_flying_to(self, zone: Zone) -> int:
+        """Return how many drones in flight land in the zone."""
         return sum(1 for d in self.drones
                    if d.moving and d.next_zone == zone)
 
     def is_finished(self) -> bool:
+        """Return True when every drone has reached the end zone."""
         for drone in self.drones:
             if not drone.path:
                 return False
@@ -237,6 +265,7 @@ class Simulation:
         return True
 
     def run(self) -> int:
+        """Play all the turns and return their number."""
         i = 0
         while not self.is_finished():
             i += 1
@@ -244,6 +273,7 @@ class Simulation:
         return i
 
     def reset(self) -> None:
+        """Put all the drones back on the start zone, at turn 0."""
         start = self.network.start
         if start is None:
             raise ValueError("Missing start_hub")
@@ -256,6 +286,7 @@ class Simulation:
             drone.remaining_turns = 0
 
     def dry_run(self) -> int | None:
+        """Play silently; return the number of turns or None if stuck."""
         self.reset()
         try:
             return self.run()
@@ -263,6 +294,7 @@ class Simulation:
             return None
 
     def choose_best_assignment(self) -> None:
+        """Try 1, 2, 3... best paths and keep the fastest assignment."""
         best_turns: int | None = None
         best_nb = 1
         for self.optimistic in (True, False):
@@ -283,6 +315,7 @@ class Simulation:
         self.reset()
 
     def assign_counts(self, counts: list[int]) -> None:
+        """Give counts[i] drones the path i, longest paths first."""
         order = sorted(range(len(counts)),
                        key=lambda i: -self.path_infos[i].cost)
         drone_index = 0
@@ -292,6 +325,7 @@ class Simulation:
                 drone_index += 1
 
     def improve_counts(self, counts: list[int], best_turns: int) -> None:
+        """Move drones between paths while the simulation gets faster."""
         nb = min(len(counts), 16)
         improved = True
         while improved:

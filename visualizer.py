@@ -1,3 +1,5 @@
+"""Tkinter window that shows the map and the drones."""
+
 import tkinter as tk
 
 from classes import Map, Zone
@@ -5,9 +7,12 @@ from simulation import Simulation
 
 
 class Visualizer:
+    """Display the map and the drones in a tkinter window."""
+
     MARGIN = 60
 
     def __init__(self, graph: Map, simulation: Simulation) -> None:
+        """Create the window, the canvas and the Next Step button."""
         self.graph = graph
         self.simulation = simulation
 
@@ -34,17 +39,21 @@ class Visualizer:
         self.canvas.bind("<Configure>", lambda event: self.redraw())
 
     def run(self) -> None:
+        """Start the graphical interface."""
         self.root.mainloop()
 
     def destroy(self) -> None:
+        """Close the window."""
         self.root.destroy()
 
     def get_map_bounds(self) -> tuple[int, int, int, int]:
+        """Return min_x, max_x, min_y and max_y of the zones."""
         zones = self.graph.zones.values()
         return (min(z.x for z in zones), max(z.x for z in zones),
                 min(z.y for z in zones), max(z.y for z in zones))
 
     def update_transform(self) -> None:
+        """Compute the scale and offset that fit the map in the window."""
         width = max(self.canvas.winfo_width(), 1)
         height = max(self.canvas.winfo_height(), 1)
         min_x, max_x, min_y, max_y = self.get_map_bounds()
@@ -62,11 +71,13 @@ class Visualizer:
         self.max_y = max_y
 
     def map_to_screen(self, x: float, y: float) -> tuple[float, float]:
+        """Convert map coordinates to canvas pixels."""
         screen_x = self.off_x + (x - self.min_x) * self.scale
         screen_y = self.off_y + (self.max_y - y) * self.scale
         return screen_x, screen_y
 
     def redraw(self) -> None:
+        """Clear the canvas and draw connections, zones and drones."""
         self.canvas.delete("all")
         self.update_transform()
         for con in self.graph.connections:
@@ -76,9 +87,10 @@ class Visualizer:
         for zone in self.graph.zones.values():
             self.draw_zone(zone)
         self.draw_drones()
-        self.label.config(text=f"Turn: {self.simulation.turn}")
+        self.label.config(text=f"Turns: {self.simulation.turn}")
 
     def draw_zone(self, zone: Zone) -> None:
+        """Draw a zone as a circle with its color and name."""
         x, y = self.map_to_screen(zone.x, zone.y)
         radius = max(8, min(25, self.scale * 0.3))
         if zone.color == "rainbow":
@@ -94,6 +106,7 @@ class Visualizer:
         self.canvas.create_text(x, y - radius - 8, text=zone.name)
 
     def draw_rainbow_zone(self, x: float, y: float, radius: float) -> None:
+        """Draw a rainbow zone as nested circles."""
         colors = ["#ff0000", "#ff7f00", "#ffff00", "#00ff00",
                   "#0000ff", "#4b0082", "#9400d3"]
         step = radius / len(colors)
@@ -103,7 +116,8 @@ class Visualizer:
                                     fill=color, outline="")
 
     def draw_drones(self) -> None:
-        self.canvas.delete("dron")
+        """Draw every drone as a numbered triangle."""
+        self.canvas.delete("drone")
         size = max(4, min(10, self.scale * 0.12))
         for i, drone in enumerate(self.simulation.drones):
             target = drone.next_zone
@@ -124,6 +138,7 @@ class Visualizer:
                 fill="black", tags="drone")
 
     def next_step(self) -> None:
+        """Play one simulation turn and redraw the window."""
         if self.simulation.is_finished():
             return
         try:
